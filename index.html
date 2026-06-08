@@ -58,6 +58,7 @@ a{color:var(--blue)}
 <button class="on" data-s="sch">📅 赛程</button>
 <button data-s="tab">📊 积分榜</button>
 <button data-s="odd">🤖 赔率榜 · AI预测</button>
+<button data-s="champ">🏆 夺冠概率</button>
 <button data-s="news">📰 每日新闻</button>
 </nav>
 
@@ -71,12 +72,16 @@ a{color:var(--blue)}
 <section id="odd"><div class="card"><div id="oddBody"></div></div>
 <div class="note">🤖 AI 胜负预测 = 抓取博彩赔率去水后的隐含概率（实时）。当前为示例赔率，接入实时赔率源后自动更新。</div></section>
 
+<section id="champ"><div class="card"><div id="champBody"></div></div>
+<div class="note" id="champNote">🏆 数据：Polymarket 预测市场实时夺冠概率（成交量超 17 亿美元）。打开页面自动尝试刷新最新值。</div></section>
+
 <section id="news"><div class="card"><div id="newsBody"></div></div>
 <div class="note">每日新闻接入 ESPN / RSS 源后自动刷新。</div></section>
 </div>
 
 <script>
 const DATA={
+ champ:[{"t":"西班牙","p":0.1615},{"t":"法国","p":0.1615},{"t":"英格兰","p":0.1095},{"t":"葡萄牙","p":0.0995},{"t":"阿根廷","p":0.0885},{"t":"巴西","p":0.0835},{"t":"德国","p":0.0535},{"t":"荷兰","p":0.0395},{"t":"挪威","p":0.0255},{"t":"比利时","p":0.0215},{"t":"哥伦比亚","p":0.0195},{"t":"日本","p":0.0195},{"t":"摩洛哥","p":0.0185},{"t":"墨西哥","p":0.0145},{"t":"瑞士","p":0.0125},{"t":"土耳其","p":0.0125},{"t":"美国","p":0.0115},{"t":"乌拉圭","p":0.0105},{"t":"克罗地亚","p":0.0095},{"t":"厄瓜多尔","p":0.0085},{"t":"塞内加尔","p":0.0065},{"t":"科特迪瓦","p":0.0045},{"t":"奥地利","p":0.0045},{"t":"瑞典","p":0.0045}],
  schedule:[
   {g:"A组",t1:"墨西哥",t2:"南非",when:"6/12 03:00",ven:"阿兹特克 · 墨西哥城"},
   {g:"A组",t1:"韩国",t2:"捷克",when:"6/12 10:00",ven:"阿克隆 · 瓜达拉哈拉"},
@@ -108,8 +113,26 @@ function render(){
   `<div class="odds"><div class="orow"><span>${m.t1} vs ${m.t2}</span><span style="color:var(--sub);font-weight:400">赔率 ${m.o[0]} / ${m.o[1]} / ${m.o[2]}</span></div><div class="bar"><span class="b-w" style="width:${p[0]}%">${m.t1.slice(0,2)} ${p[0]}%</span><span class="b-d" style="width:${p[1]}%">平 ${p[1]}%</span><span class="b-l" style="width:${p[2]}%">${m.t2.slice(0,2)} ${p[2]}%</span></div></div>`;}).join('');
  document.getElementById('newsBody').innerHTML=DATA.news.map(n=>
   `<div class="news"><h4>${n.h}</h4><p>${n.p}</p><div class="src">${n.s}</div></div>`).join('');
+ renderChamp();
+}
+function renderChamp(){
+ const mx=DATA.champ[0]?DATA.champ[0].p:0.2;
+ document.getElementById('champBody').innerHTML=DATA.champ.map((c,i)=>
+  `<div class="odds"><div class="orow"><span>${i+1}. ${c.t}</span><span style="color:var(--gold)">${(c.p*100).toFixed(1)}%</span></div><div class="bar"><span class="b-w" style="width:${Math.max(c.p/mx*100,9)}%">&nbsp;</span></div></div>`).join('');
+}
+const CN={Spain:"西班牙",France:"法国",England:"英格兰",Portugal:"葡萄牙",Argentina:"阿根廷",Brazil:"巴西",Germany:"德国",Netherlands:"荷兰",Norway:"挪威",Belgium:"比利时",Colombia:"哥伦比亚",Japan:"日本",Morocco:"摩洛哥",Mexico:"墨西哥",Switzerland:"瑞士",Turkiye:"土耳其",USA:"美国","United States":"美国",Uruguay:"乌拉圭",Croatia:"克罗地亚",Ecuador:"厄瓜多尔",Senegal:"塞内加尔","Ivory Coast":"科特迪瓦",Austria:"奥地利",Sweden:"瑞典",Italy:"意大利",Denmark:"丹麦",Canada:"加拿大",Korea:"韩国","South Korea":"韩国"};
+async function fetchChamp(){
+ try{
+  const r=await fetch('https://gamma-api.polymarket.com/events?limit=40&closed=false&active=true');
+  const d=await r.json(); const e=d.find(x=>(x.title||'').trim().toLowerCase()==='world cup winner'); if(!e)return;
+  let rows=[];
+  for(const m of e.markets){try{const pr=JSON.parse(m.outcomePrices),ou=JSON.parse(m.outcomes);let yes=null;ou.forEach((o,i)=>{if(String(o).toLowerCase()==='yes')yes=parseFloat(pr[i]);});if(yes==null)continue;const t=m.groupItemTitle||m.question||'';rows.push({t:CN[t]||t,p:yes});}catch(e){}}
+  rows.sort((a,b)=>b.p-a.p);
+  if(rows.length){DATA.champ=rows.slice(0,24);renderChamp();document.getElementById('champNote').textContent='🏆 数据：Polymarket 实时夺冠概率 · 已刷新';}
+ }catch(e){document.getElementById('champNote').textContent='🏆 实时获取受跨域限制，当前为构建时快照（可改为定时抓取 data.json）。';}
 }
 render();
+fetchChamp();
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
  document.querySelectorAll('section').forEach(s=>s.classList.remove('on'));
