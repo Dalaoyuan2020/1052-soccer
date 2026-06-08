@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 世界杯 · 看球×AI</title>
+<style>
+:root{--bg:#0c1424;--card:#152133;--card2:#1c2c45;--line:#26395a;--txt:#e8eef7;--sub:#9fb2cf;--gold:#f4c63d;--green:#36c98a;--red:#ef5c6e;--blue:#4d9bff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:0 14px 60px}
+header{background:linear-gradient(135deg,#16335c,#0c1424 70%);padding:26px 14px 18px;border-bottom:1px solid var(--line)}
+.hd{max-width:980px;margin:0 auto}
+h1{font-size:26px;letter-spacing:1px}
+h1 .y{color:var(--gold)}
+.meta{color:var(--sub);font-size:13px;margin-top:6px}
+.opener{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.opener b{color:var(--gold)}
+nav{position:sticky;top:0;z-index:5;background:#0c1424ee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line);display:flex;gap:4px;padding:8px 14px;overflow:auto}
+nav button{background:transparent;border:0;color:var(--sub);font-size:15px;padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--card2);color:var(--gold);font-weight:700}
+section{display:none;padding-top:18px}
+section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+.match{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.match:last-child{border:0}
+.teams{font-weight:600;font-size:15px}
+.when{color:var(--sub);font-size:12.5px;text-align:right;min-width:110px}
+.tag{display:inline-block;font-size:11px;color:var(--gold);border:1px solid #4a3c12;background:#2a230d;border-radius:5px;padding:1px 6px;margin-right:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--sub);font-weight:600;font-size:12.5px}
+td.t{text-align:left;font-weight:600}
+.gt{color:var(--gold);font-size:15px;margin:4px 0 2px}
+.odds{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-bottom:1px solid var(--line)}
+.odds:last-child{border:0}
+.orow{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;font-size:11px;color:#0c1424;font-weight:700}
+.bar span{display:flex;align-items:center;justify-content:center;min-width:30px}
+.b-w{background:var(--green)}.b-d{background:#cdd6e6}.b-l{background:var(--red)}
+.news{padding:11px 0;border-bottom:1px solid var(--line)}
+.news:last-child{border:0}
+.news h4{font-size:15px}
+.news p{color:var(--sub);font-size:13px;margin-top:3px}
+.news .src{color:var(--gold);font-size:11.5px}
+.note{color:var(--sub);font-size:12px;margin-top:8px;text-align:center}
+a{color:var(--blue)}
+</style>
+</head>
+<body>
+<header><div class="hd">
+<h1>2026 <span class="y">世界杯</span> · 看球 × AI</h1>
+<div class="meta">美 / 加 / 墨 联合主办 · 48 队 12 组 · 2026.6.11 – 7.19 · 北京时间</div>
+<div class="opener">🏆 揭幕战：<b>墨西哥 vs 南非</b>　阿兹特克球场（墨西哥城）　<span style="color:var(--sub)">6 月 12 日 03:00（北京）</span></div>
+</div></header>
+
+<nav>
+<button class="on" data-s="sch">📅 赛程</button>
+<button data-s="tab">📊 积分榜</button>
+<button data-s="odd">🤖 赔率榜 · AI预测</button>
+<button data-s="news">📰 每日新闻</button>
+</nav>
+
+<div class="wrap">
+<section id="sch" class="on"><div class="card"><div id="schBody"></div></div>
+<div class="note">赛程示例为揭幕日真实对阵；接入实时数据后自动补全全部 104 场。</div></section>
+
+<section id="tab"><div id="tabBody"></div>
+<div class="note">小组赛 6.11–6.27；每组前 2 名 + 成绩最好的 8 个第 3 名晋级 32 强淘汰赛。</div></section>
+
+<section id="odd"><div class="card"><div id="oddBody"></div></div>
+<div class="note">🤖 AI 胜负预测 = 抓取博彩赔率去水后的隐含概率（实时）。当前为示例赔率，接入实时赔率源后自动更新。</div></section>
+
+<section id="news"><div class="card"><div id="newsBody"></div></div>
+<div class="note">每日新闻接入 ESPN / RSS 源后自动刷新。</div></section>
+</div>
+
+<script>
+const DATA={
+ schedule:[
+  {g:"A组",t1:"墨西哥",t2:"南非",when:"6/12 03:00",ven:"阿兹特克 · 墨西哥城"},
+  {g:"A组",t1:"韩国",t2:"捷克",when:"6/12 10:00",ven:"阿克隆 · 瓜达拉哈拉"},
+  {g:"D组",t1:"美国",t2:"巴拉圭",when:"6/13 待定",ven:"SoFi · 洛杉矶"},
+  {g:"B组",t1:"加拿大",t2:"波黑",when:"6/13 待定",ven:"BMO · 多伦多"},
+ ],
+ groups:[
+  {name:"A 组",rows:[["墨西哥",0,0,0,0,0],["南非",0,0,0,0,0],["韩国",0,0,0,0,0],["捷克",0,0,0,0,0]]},
+  {name:"B 组",rows:[["加拿大",0,0,0,0,0],["波黑",0,0,0,0,0],["—",0,0,0,0,0],["—",0,0,0,0,0]]},
+ ],
+ odds:[
+  {t1:"墨西哥",t2:"南非",o:[1.75,3.6,4.8]},
+  {t1:"韩国",t2:"捷克",o:[2.5,3.2,2.8]},
+  {t1:"美国",t2:"巴拉圭",o:[1.9,3.3,4.2]},
+ ],
+ news:[
+  {h:"揭幕战今夜打响：墨西哥坐镇阿兹特克迎战南非",p:"东道主墨西哥将在能容纳逾八万人的阿兹特克球场拉开 2026 世界杯大幕。",s:"示例 · 待接 ESPN"},
+  {h:"48 队新赛制：12 组 4 队，第三名也有机会晋级",p:"本届首次扩军至 48 队，小组每组前二加 8 个最佳第三名共 32 队进淘汰赛。",s:"示例 · 待接 RSS"},
+  {h:"美国队 SoFi 球场首秀对阵巴拉圭",p:"东道主之一美国队的小组赛首战将在洛杉矶 SoFi 球场进行。",s:"示例 · 待接 ESPN"},
+ ]
+};
+function imp(o){const r=o.map(x=>1/x);const s=r.reduce((a,b)=>a+b);return r.map(x=>Math.round(x/s*100));}
+function render(){
+ document.getElementById('schBody').innerHTML=DATA.schedule.map(m=>
+  `<div class="match"><div class="teams"><span class="tag">${m.g}</span>${m.t1} <span style="color:var(--sub)">vs</span> ${m.t2}<div style="color:var(--sub);font-size:12px;font-weight:400">${m.ven}</div></div><div class="when">${m.when}</div></div>`).join('');
+ document.getElementById('tabBody').innerHTML=DATA.groups.map(g=>
+  `<div class="card"><div class="gt">${g.name}</div><table><tr><th class="t" style="text-align:left">球队</th><th>赛</th><th>胜</th><th>平</th><th>负</th><th>净</th><th>积分</th></tr>${g.rows.map(r=>`<tr><td class="t">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td><b>${r[2]*3+r[3]}</b></td></tr>`).join('')}</table></div>`).join('');
+ document.getElementById('oddBody').innerHTML=DATA.odds.map(m=>{const p=imp(m.o);return
+  `<div class="odds"><div class="orow"><span>${m.t1} vs ${m.t2}</span><span style="color:var(--sub);font-weight:400">赔率 ${m.o[0]} / ${m.o[1]} / ${m.o[2]}</span></div><div class="bar"><span class="b-w" style="width:${p[0]}%">${m.t1.slice(0,2)} ${p[0]}%</span><span class="b-d" style="width:${p[1]}%">平 ${p[1]}%</span><span class="b-l" style="width:${p[2]}%">${m.t2.slice(0,2)} ${p[2]}%</span></div></div>`;}).join('');
+ document.getElementById('newsBody').innerHTML=DATA.news.map(n=>
+  `<div class="news"><h4>${n.h}</h4><p>${n.p}</p><div class="src">${n.s}</div></div>`).join('');
+}
+render();
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+ document.querySelectorAll('section').forEach(s=>s.classList.remove('on'));
+ document.getElementById(b.dataset.s).classList.add('on');
+});
+</script>
+</body>
+</html>
